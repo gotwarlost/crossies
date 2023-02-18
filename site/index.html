@@ -26,12 +26,11 @@
             list-style: none;
         }
         .credits {
-            margin-top: 1rem;
-            margin-bottom: 1rem;
-            padding-top: 1rem;
-            font-size: 1rem;
             border-top: 1px solid #555;
-            border-bottom: 1px solid #555;
+            margin-top: 1.5rem;
+            padding-top: 0.5rem;
+            margin-bottom: 1rem;
+            font-size: 1rem;
             color: #ccc;
         }
         .credits a {
@@ -43,11 +42,16 @@
         .credits a {
             text-decoration: underline;
         }
+        .tagline {
+            font-size: 1rem;
+            font-style: italic;
+        }
     </style>
 </head>
 
 <body>
 <h1 style="border-bottom: 1px solid white">Crossword tools</h1>
+<p class="tagline">simple, mobile-friendly tools for setters and solvers</p>
 
 <ul class="main">
     <li>Anagrams : <a href="/tools/anagrams/?bust=1">manual</a> &nbsp;&nbsp;|&nbsp;&nbsp; <a href="/tools/auto-anagrams/?bust=1">automatic</a></li>
@@ -56,18 +60,9 @@
 </ul>
 
 <div class="credits">
-    <h2>Powered by</h2>
-
-    <ul>
-        <li>Synonyms: <a href="https://wordhippo.com">wordhippo.com</a></li>
-        <li>Matching words and anagrams: <a href="https://www.thewordfinder.com">thewordfinder.com</a></li>
-    </ul>
-</div>
-
-<div>
-    <a href="https://github.com/gotwarlost/crossies">
-        <img src="/images/github.svg" class="icon" style="border:none; width: 40px; height: 40px;">
-    </a>
+    <a href="https://github.com/gotwarlost/crossies"><img src="/images/github.svg" class="icon" alt="Github link" style="border:none; width: 40px; height: 40px; margin-right: 0"></a>
+    powered by <a href="https://wordhippo.com">wordhippo</a> for synonyms and
+    <a href="https://www.thewordfinder.com">thewordfinder</a> for anagrams and matching words.
 </div>
 
 </body>
