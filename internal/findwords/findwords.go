@@ -1,10 +1,7 @@
 package findwords
 
 import (
-	"bytes"
 	"fmt"
-	"io"
-	"net/http"
 	"net/url"
 	"regexp"
 	"strconv"
@@ -19,7 +16,6 @@ import (
 
 const (
 	placeholder      = "."
-	findURL          = "https://www.thewordfinder.com/wordlist/at-position-%s/?dir=ascending&field=word&pg=%d&size=%d"
 	infoPageSize     = 250
 	infoPagesPerPage = 1
 )
@@ -30,7 +26,7 @@ var (
 	scoreRE      = regexp.MustCompile(`[(].*`)
 )
 
-func getURL(frame string, page int) (string, error) {
+func getURL(frame string, page int) (string, url.Values, error) {
 	count := len(frame)
 	specifiedCount := 0
 	word := ""
@@ -44,9 +40,15 @@ func getURL(frame string, page int) (string, error) {
 		}
 	}
 	if specifiedCount == 0 {
-		return "", fmt.Errorf("inputs cannot all be dots")
+		return "", nil, fmt.Errorf("inputs cannot all be dots")
 	}
-	return fmt.Sprintf(findURL, word, page, len(word)), nil
+	return fmt.Sprintf("https://www.thewordfinder.com/wordlist/at-position-%s/", word),
+		url.Values{
+			"dir":   []string{"ascending"},
+			"field": []string{"word"},
+			"pg":    []string{fmt.Sprint(page)},
+			"size":  []string{fmt.Sprint(len(word))},
+		}, nil
 }
 
 // Query is a query to find words matching a frame.
@@ -114,26 +116,16 @@ func (q *Query) readPage() (*pageResult, error) {
 	if err := q.initialize(); err != nil {
 		return nil, err
 	}
-	u, err := getURL(q.Frame, q.Page)
+	u, query, err := getURL(q.Frame, q.Page)
 	if err != nil {
 		return nil, err
-	}
-	res, err := http.Get(u)
-	if err != nil {
-		return nil, err
-	}
-	defer func() { _ = res.Body.Close() }()
-	if res.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("GET %s return status %d", u, res.StatusCode)
-	}
-	b, err := io.ReadAll(res.Body)
-	if err != nil {
-		return nil, errors.Wrap(err, "read response body")
 	}
 
-	doc, err := htmlplus.Load(bytes.NewReader(b))
+	doc, err := htmlplus.LoadURL(u, htmlplus.LoadOptions{
+		Params: query,
+	})
 	if err != nil {
-		return nil, errors.Wrap(err, "read and parse HTML")
+		return nil, err
 	}
 
 	wordCountDiv := doc.Find("div.word-criteria-heading")

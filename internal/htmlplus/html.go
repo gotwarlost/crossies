@@ -2,7 +2,10 @@ package htmlplus
 
 import (
 	"bytes"
+	"fmt"
 	"io"
+	"net/http"
+	"net/url"
 	"strings"
 	"sync"
 
@@ -173,4 +176,55 @@ func Load(r io.Reader) (*Document, error) {
 		return nil, err
 	}
 	return &Document{Node: *Wrap(node)}, nil
+}
+
+// LoadOptions are options for loading a URL.
+type LoadOptions struct {
+	Method string     // HTTP method, defaults to GET
+	Params url.Values // URL or form parameters based on method
+}
+
+// LoadURL loads a document from the supplied URL.
+func LoadURL(u string, opts LoadOptions) (*Document, error) {
+	if opts.Method == "" {
+		opts.Method = http.MethodGet
+	}
+
+	var in io.Reader
+	var ct string
+	switch opts.Method {
+	case http.MethodGet:
+		if opts.Params != nil {
+			u = fmt.Sprintf("%s?%s", u, opts.Params.Encode())
+		}
+	case http.MethodPost:
+		in = strings.NewReader(opts.Params.Encode())
+		ct = "application/x-www-form-urlencoded"
+	default:
+		return nil, fmt.Errorf("invalid HTTP method: %s", opts.Method)
+	}
+	req, err := http.NewRequest(opts.Method, u, in)
+	if err != nil {
+		return nil, err
+	}
+	if ct != "" {
+		req.Header.Set("Content-Type", ct)
+	}
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer func() { _ = res.Body.Close() }()
+	if res.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("%s %s return status %d", opts.Method, u, res.StatusCode)
+	}
+	b, err := io.ReadAll(res.Body)
+	if err != nil {
+		return nil, errors.Wrap(err, "read response body")
+	}
+	doc, err := Load(bytes.NewReader(b))
+	if err != nil {
+		return nil, errors.Wrap(err, "read and parse HTML")
+	}
+	return doc, nil
 }

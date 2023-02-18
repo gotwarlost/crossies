@@ -2,7 +2,6 @@ package synonyms
 
 import (
 	"fmt"
-	"net/http"
 	"net/url"
 	"regexp"
 	"sort"
@@ -147,19 +146,13 @@ func (q *Query) Run() (*Result, error) {
 	if q.Word == "" {
 		return nil, fmt.Errorf("no word specified")
 	}
+
 	u := fmt.Sprintf("%s/what-is/another-word-for/%s.html", baseURL, url.PathEscape(q.Word))
-	res, err := http.Get(u)
+	doc, err := htmlplus.LoadURL(u, htmlplus.LoadOptions{})
 	if err != nil {
 		return nil, err
 	}
-	defer func() { _ = res.Body.Close() }()
-	if res.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("GET %s returrn status %d", u, res.StatusCode)
-	}
-	doc, err := htmlplus.Load(res.Body)
-	if err != nil {
-		return nil, errors.Wrap(err, "read and parse HTML")
-	}
+
 	sel := doc.FindAll("div.relatedwords > div.wb")
 	uniq := map[string]*Entry{}
 	counter := 0

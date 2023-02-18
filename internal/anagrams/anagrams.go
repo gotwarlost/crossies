@@ -1,9 +1,7 @@
 package anagrams
 
 import (
-	"bytes"
 	"fmt"
-	"io"
 	"net/http"
 	"net/url"
 	"sort"
@@ -11,7 +9,6 @@ import (
 
 	"github.com/gotwarlost/crossies/internal/htmlplus"
 	"github.com/gotwarlost/crossies/internal/inputerror"
-	"github.com/pkg/errors"
 )
 
 const (
@@ -60,21 +57,12 @@ func Solve(query Query) (*Result, error) {
 	vals.Set("dic", "1")
 	vals.Set("order", "length")
 
-	res, err := http.PostForm(baseURL, vals)
+	doc, err := htmlplus.LoadURL(baseURL, htmlplus.LoadOptions{
+		Method: http.MethodPost,
+		Params: vals,
+	})
 	if err != nil {
 		return nil, err
-	}
-	defer res.Body.Close()
-	if res.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("POST %s return status %d", baseURL, res.StatusCode)
-	}
-	b, err := io.ReadAll(res.Body)
-	if err != nil {
-		return nil, errors.Wrap(err, "read response body")
-	}
-	doc, err := htmlplus.Load(bytes.NewReader(b))
-	if err != nil {
-		return nil, errors.Wrap(err, "read and parse HTML")
 	}
 	var ret []string
 	nodes := doc.FindAll("p.result a")
