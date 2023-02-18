@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>Find matching words</title>
+    <link rel="stylesheet" href="/external/bootstrap-4.4.1/bootstrap.min.css">
+    <link rel="stylesheet" href="/css/styles.css?bust=1">
+    <style>
+        h2 {
+            margin-top: 1em;
+            margin-bottom: 0;
+        }
+
+        h2 label {
+            font-size: inherit;
+        }
+
+        label {
+            margin-bottom: 0;
+        }
+
+        div.prompt {
+            margin-top: 0.5rem;
+        }
+
+        h1 {
+            margin-left: 0;
+        }
+
+        button {
+            background: black;
+            color: white;
+            border: 1px solid white;
+        }
+
+        div#error {
+            color: red;
+        }
+
+        div.help {
+            font-size: 1rem;
+            font-style: italic;
+        }
+
+        .inline-result {
+            display: inline-block;
+            padding-left: 0.5em;
+        }
+
+        .even {
+            color: lightblue;
+        }
+
+        .tile {
+            margin: 3px;
+            font-family: "futura bold", sans-serif;
+            text-transform: capitalize;
+            background: #eee;
+            color: #333;
+            display: inline-block;
+            text-align: center;
+            border: 1px solid #111;
+            border-radius: 5px;
+            width: 50px;
+            height: 50px;
+            line-height: 50px;
+            font-size: 40px;
+        }
+
+        .count {
+            background: inherit;
+            color: white;
+            border: none;
+        }
+
+    </style>
+    <script src="/js/crossies.js?bust=1"></script>
+    <script src="findwords.js?bust=1"></script>
+</head>
+<body>
+<img src="/images/progress.svg?bust=1" style="display: none">
+
+<div class="container">
+
+    <div class="row nav">
+        <img src="/images/back.svg?bust=1" id='back-link' class="hide icon" alt="go back" title="go back">
+        <a href="/"><img  class="icon" src="/images/home.svg?bust=1" alt="home" title="home"></a>
+        <img  class="icon" id="clean-link" src="/images/clean.svg?bust=1" alt="clear inputs" title="clear inputs">
+        <h1>Matching words</h1>
+    </div>
+    <div class="row">
+    </div>
+
+    <section id="query-page">
+        <div class="row" id="error">
+        </div>
+
+        <form id="query" method="get">
+            <div class="row prompt">
+                <h2><label for="frame">Word</label></h2>
+            </div>
+            <div class="row">
+                <input type="text" inputmode="email" name="frame" spellcheck="false" id="frame" maxlength="40" size="15">
+                <input type="hidden" name="page" id="page">
+                &nbsp;
+                <input type="image" src="/images/go.svg?bust=1" id="go" name="go" value="Go!" class="icon">
+            </div>
+            <div class="row prompt">
+                use a dot . to indicate a missing letter
+            </div>
+            <div class="row" id="show-word"></div>
+            <div class="row">
+                <h2>Prefer synonyms of</h2>
+            </div>
+            <div class="row">
+                <input type="text" name="syn1" id="syn1" maxlength="40" size="15">
+            </div>
+            <div class="row">
+                or
+            </div>
+            <div class="row">
+                <input type="text" name="syn2" id="syn2" maxlength="40" size="15">
+            </div>
+        </form>
+    </section>
+
+    <section id="results-page" class="hide">
+        <div class="row">
+            <div id='results-title'></div>
+        </div>
+        <section id="results-list">
+
+        </section>
+        <div class="row">
+            <button id='more-link' class="hide">More ...</button>
+        </div>
+    </section>
+</div> <!-- container -->
+
+</body>
+</html>

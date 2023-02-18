@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>Solve anagrams</title>
+    <link rel="stylesheet" href="/external/bootstrap-4.4.1/bootstrap.min.css">
+    <link rel="stylesheet" href="/css/styles.css?bust=1">
+    <style>
+        h2 {
+            margin-top: 1em;
+            margin-bottom: 0;
+        }
+
+        h2 label {
+            font-size: inherit;
+        }
+
+        label {
+            margin-bottom: 0;
+        }
+
+        div.prompt {
+            margin-top: 0.5rem;
+        }
+
+        h1 {
+            margin-left: 0;
+        }
+
+        button {
+            background: black;
+            color: white;
+            border: 1px solid white;
+        }
+
+        div#error {
+            color: red;
+        }
+
+        .even {
+            color: lightblue;
+        }
+
+        .inline-result {
+            display: inline-block;
+            padding-left: 0.5em;
+        }
+    </style>
+    <script src="/js/crossies.js?bust=1"></script>
+    <script src="anagrams.js?bust=1"></script>
+</head>
+<body>
+<img src="/images/progress.svg?bust=1" style="display: none">
+
+<div class="container">
+
+    <div class="row nav">
+        <img src="/images/back.svg?bust=1" id='back-link' class="hide icon" alt="go back" title="go back">
+        <a href="/"><img  class="icon" src="/images/home.svg?bust=1" alt="home" title="home"></a>
+        <img  class="icon" id="clean-link" src="/images/clean.svg?bust=1" alt="clear inputs" title="clear inputs">
+        <h1>Auto anagrams</h1>
+    </div>
+    <div class="row">
+    </div>
+
+    <section id="query-page">
+        <div class="row" id="error">
+        </div>
+
+        <form id="query" method="get">
+            <div class="row prompt">
+                <h2><label for="phrase">Phrase</label></h2>
+            </div>
+            <div class="row">
+                <input type="text" name="phrase" id="phrase" maxlength="40" size="15">
+                <input type="image" src="/images/go.svg?bust=1" id="go" name="go" value="Go!" class="icon">
+            </div>
+            <div class="row">
+                <input type="checkbox" name="partial" id="partial" value="true">
+                &nbsp;&nbsp;
+                <label for="partial">Show partial anagrams</label>
+            </div>
+        </form>
+    </section>
+
+    <section id="results-page" class="hide">
+        <div class="row">
+            <div id='results-title'></div>
+        </div>
+        <section id="results-list">
+
+        </section>
+    </section>
+</div> <!-- container -->
+
+</body>
+</html>

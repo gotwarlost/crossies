@@ -1,0 +1,282 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Solve anagrams</title>
+    <link rel="stylesheet" href="/external/bootstrap-4.4.1/bootstrap.min.css">
+    <link rel="stylesheet" href="/css/styles.css?bust=1">
+    <style>
+        html {
+            height: 100%;
+        }
+
+        .tile-base {
+            padding: 0;
+            font-family: "futura bold", sans-serif;
+            text-transform: capitalize;
+            background: #eee;
+            color: #333;
+            display: inline-block;
+            position: absolute;
+            text-align: center;
+            border: 1px solid #111;
+            border-radius: 5px;
+        }
+
+        .large, .large input {
+            font-size: 42px;
+        }
+
+        #sandbox, #input {
+            margin: 1em;
+            width: 100%;
+            x-border: 1px solid #ccc;
+            touch-action: pinch-zoom;
+        }
+
+        .sep {
+            margin: 1rem;
+        }
+
+        .hide {
+            display: none !important;
+        }
+
+        .tool {
+            display: inline-block;
+            margin: 0.5em 5em;
+            margin-left: 0;
+        }
+    </style>
+    <style id="tile-dynamic">
+        .tile-computed {
+            width: 50px;
+            height: 50px;
+            line-height: 50px;
+            font-size: 40px;
+        }
+    </style>
+    <script src="/external/plain-draggable-2.5.12/plain-draggable.min.js"></script>
+    <script src="/external/hammer-2.0.8/hammer.min.js"></script>
+    <script src="tiles.js?bust=1"></script>
+    <script src="gen-layout.js?bust=1"></script>
+    <script src="store.js?bust=1"></script>
+</head>
+<body>
+<div id="sandbox-container" class="container-fluid d-flex flex-column h-100">
+    <div class="row">
+        <div class="col-12 nav">
+            <div>
+                <a href="/"><img class="icon" id="home" src="/images/home.svg?bust=1"></a>
+                <img class="icon" id="show-input" src="/images/edit.svg?bust=1">
+                <img class="icon" id="shuffle-input" src="/images/shuffle.svg?bust=1">
+            </div>
+        </div>
+    </div>
+    <div class="row d-flex flex-fill">
+        <div id="sandbox">
+        </div>
+    </div>
+</div>
+
+<div id="input-container" class="container">
+<form id="controls" method="get" href="#">
+    <div class="row nav">
+        <div>
+            <a href="/"><img class="icon" id="home2" src="/images/home.svg?bust=1"></a>
+            <h1>Manual anagrams</h1>
+        </div>
+    </div>
+    <div class="row">
+        <label for="phrase">Enter phrase</label>
+    </div>
+    <div class="row">
+            <input id="phrase" size="15" name="phrase" type="text" value="">
+            <input id="submit"  name="submit" type="image" class="icon" src="/images/go.svg?bust=1">
+    </div>
+</form>
+</div>
+
+</body>
+<script>
+    // nicked from underscore and modified for use.
+    function debounce(func, wait) {
+        let timeout;
+        return function () {
+            const context = this;
+            const args = arguments;
+            const later = function () {
+                timeout = null;
+                func.apply(context, args);
+            };
+            clearTimeout(timeout);
+            timeout = setTimeout(later, wait);
+        };
+    }
+
+    window.onload = function () {
+        const controls = {
+            inputNode: document.querySelector('#phrase'),
+            submitButton: document.querySelector('#submit'),
+            inputArea: document.querySelector('#input'),
+            sandbox: document.querySelector('#sandbox'),
+            form: document.querySelector('form#controls'),
+            sandboxContainer: document.querySelector('#sandbox-container'),
+            inputContainer: document.querySelector('#input-container'),
+            switchInput: document.querySelector("#show-input"),
+            shuffleInput: document.querySelector("#shuffle-input")
+        };
+
+        function makeContainerVisible(input) {
+            if (input) {
+                controls.inputContainer.classList.remove("hide");
+                controls.sandboxContainer.classList.add("hide");
+                controls.inputNode.select();
+                controls.inputNode.focus();
+            } else {
+                controls.inputNode.blur();
+                controls.inputContainer.classList.add("hide");
+                controls.sandboxContainer.classList.remove("hide");
+            }
+        }
+
+        function enableSwipe() {
+            return; // many usability problems need fixing before we enable this.
+            const opts = {
+                recognizers: [
+                    [Hammer.Swipe, {direction: Hammer.DIRECTION_HORIZONTAL}],
+                ],
+                domEvents: true
+            };
+            const mc1 = new Hammer.Manager(controls.sandbox, opts);
+            mc1.on('swipe', function (evt) {
+                if (evt.target.classList.contains('tile-base')) {
+                    return;
+                }
+                makeContainerVisible(true);
+            });
+            const mc2 = new Hammer.Manager(controls.inputArea, opts);
+            mc2.on('swipe', function (evt) {
+                makeContainerVisible(false);
+            });
+        }
+
+        const coords = new Coords(controls.sandbox);
+        const tiles = new Tiles(coords);
+        const store = new Store();
+
+        const setCurrentSnapshot = function (modifier) {
+            const snapshot = createSnapshot(controls.inputNode.value, tiles.currentLayout());
+            if (modifier) {
+                modifier(snapshot);
+            }
+            console.log('SCS', snapshot);
+            store.currentSnapshot = snapshot;
+        };
+
+        store.addSubscriber(function () {
+            controls.inputNode.value = store.currentSnapshot.phrase;
+        });
+        store.addSubscriber(function () {
+            const ls = store.currentSnapshot.layoutState;
+            tiles.syncToLayout(new Layout(ls.boundingRect, ls.tileStates));
+        });
+
+        const currentPhrase = function () {
+            return controls.inputNode.value;
+        };
+
+        const newPhrase = function () {
+            const layout = randomLayout(currentPhrase(), coords);
+            setCurrentSnapshot(function (snap) {
+                snap.layoutState = layout.state;
+            });
+        };
+        const phraseOrInput = function () {
+            if (currentPhrase() === "") {
+                makeContainerVisible(true);
+            } else {
+                makeContainerVisible(false);
+                newPhrase();
+            }
+        };
+        controls.form.addEventListener('submit', function (ev) {
+            ev.preventDefault();
+            phraseOrInput();
+        });
+        controls.submitButton.addEventListener('click', function (ev) {
+            ev.preventDefault();
+            phraseOrInput();
+        });
+        tiles.moveObserver = function () {
+            setCurrentSnapshot();
+        };
+
+        const resizeHandler = function () {
+            const tileStates = store.currentSnapshot.layoutState.tileStates;
+            if (tileStates.length === 0) {
+                return;
+            }
+
+            function midPoint(rect) {
+                return {
+                    x: rect.left + Math.floor((rect.right - rect.left) / 2),
+                    y: rect.top + Math.floor((rect.bottom - rect.top) / 2)
+                };
+            }
+
+            const oldRect = store.currentSnapshot.layoutState.boundingRect;
+            const newRect = coords.boundingBox();
+            const oldMid = midPoint(oldRect);
+            const newMid = midPoint(newRect);
+            const translate = {
+                x: newMid.x - oldMid.x,
+                y: newMid.y - oldMid.y
+            };
+            const newTileStates = tileStates.map(function (tile) {
+                return createTileState(tile.value, {
+                    x: tile.position.x + translate.x,
+                    y: tile.position.y + translate.y
+                });
+            });
+            let minX = null;
+            let minY = null;
+
+            function minOf(old, curr) {
+                if (old === null) {
+                    return curr;
+                }
+                return old < curr ? old : curr;
+            }
+
+            newTileStates.forEach(function (tile) {
+                minX = minOf(minX, tile.position.x);
+                minY = minOf(minY, tile.position.y);
+            });
+            const xOffset = minX < 0 ? -minX : 0;
+            const yOffset = minY < 0 ? -minY : 0;
+            if (!(xOffset === 0 && yOffset === 0)) {
+                newTileStates.forEach(function (tile) {
+                    tile.position.x += xOffset;
+                    tile.position.y += yOffset;
+                });
+            }
+            tiles.syncToLayout(new Layout(coords.boundingBox(), newTileStates));
+        };
+        const debounced = debounce(resizeHandler, 250);
+        window.addEventListener('resize', function () {
+            debounced();
+        });
+        controls.switchInput.addEventListener('click', function () {
+            makeContainerVisible(true);
+        });
+        controls.shuffleInput.addEventListener('click', function () {
+            newPhrase();
+        });
+
+        enableSwipe();
+        phraseOrInput();
+    };
+</script>
+</html>

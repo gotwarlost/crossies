@@ -1,0 +1,49 @@
+body {
+    font-size: 18pt;
+    height: 100%;
+    background: #222;
+    color: white;
+    margin: 1em;
+}
+
+a:link, a:visited {
+    color: white;
+    text-decoration: underline;
+}
+
+h1 {
+}
+
+.hide {
+    display: none !important;
+}
+
+.icon {
+    border: 1px solid white;
+    border-radius: 5px;
+    display: inline-block;
+    margin-right: 2rem;
+    padding: 5px;
+    width: 64px;
+    height: 64px;
+}
+
+.nav {
+    margin-bottom: 0.5rem;
+}
+
+.nav h1 {
+    display: inline-block;
+}
+
+.even a:link, .even a:visited {
+    color : lightblue;
+    text-decoration: underline;
+    text-decoration-style: dotted;
+}
+
+.odd a:link, .odd a:visited {
+    color : white;
+    text-decoration: underline;
+    text-decoration-style: dotted;
+}
