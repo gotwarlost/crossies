@@ -8,7 +8,6 @@ import (
 	"github.com/gotwarlost/crossies/internal/findwords"
 	"github.com/gotwarlost/crossies/internal/inputerror"
 	"github.com/gotwarlost/crossies/internal/synonyms"
-	"github.com/naoina/denco"
 )
 
 type Handler struct {
@@ -16,17 +15,12 @@ type Handler struct {
 }
 
 func New() (*Handler, error) {
-	mux := denco.NewMux()
+	mux := http.NewServeMux()
 	ret := &Handler{}
-	h, err := mux.Build([]denco.Handler{
-		mux.GET("/v1/synonyms", ret.synonyms),
-		mux.GET("/v1/matching-words", ret.findMatchingWords),
-		mux.GET("/v1/anagrams", ret.solveAnagram),
-	})
-	if err != nil {
-		return nil, err
-	}
-	ret.h = h
+	mux.Handle("/v1/synonyms", http.HandlerFunc(ret.synonyms))
+	mux.Handle("/v1/matching-words", http.HandlerFunc(ret.findMatchingWords))
+	mux.Handle("/v1/anagrams", http.HandlerFunc(ret.solveAnagram))
+	ret.h = mux
 	return ret, nil
 }
 
@@ -45,7 +39,7 @@ func (h *Handler) sendError(w http.ResponseWriter, msg string, code int) {
 	_, _ = w.Write(b)
 }
 
-func (h *Handler) synonyms(w http.ResponseWriter, r *http.Request, _ denco.Params) {
+func (h *Handler) synonyms(w http.ResponseWriter, r *http.Request) {
 	q, err := synonyms.NewQueryFromParams(r.URL.Query())
 	if err != nil {
 		h.sendError(w, err.Error(), http.StatusBadRequest)
@@ -67,7 +61,7 @@ func (h *Handler) synonyms(w http.ResponseWriter, r *http.Request, _ denco.Param
 	_, _ = w.Write(b)
 }
 
-func (h *Handler) findMatchingWords(w http.ResponseWriter, r *http.Request, _ denco.Params) {
+func (h *Handler) findMatchingWords(w http.ResponseWriter, r *http.Request) {
 	q, err := findwords.NewQueryFromParams(r.URL.Query())
 	if err != nil {
 		h.sendError(w, err.Error(), http.StatusBadRequest)
@@ -91,7 +85,7 @@ func (h *Handler) findMatchingWords(w http.ResponseWriter, r *http.Request, _ de
 	_, _ = w.Write(b)
 }
 
-func (h *Handler) solveAnagram(w http.ResponseWriter, r *http.Request, _ denco.Params) {
+func (h *Handler) solveAnagram(w http.ResponseWriter, r *http.Request) {
 	q, err := anagrams.NewQueryFromParams(r.URL.Query())
 	if err != nil {
 		h.sendError(w, err.Error(), http.StatusBadRequest)
