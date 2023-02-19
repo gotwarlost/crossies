@@ -118,6 +118,6 @@
         inputs.frame.focus();
         inputs.frame.setSelectionRange(0, 0);
         inputs.frame.addEventListener('keyup', displayInputs);
-        controls.cleanButton.addEventListener('click', function () { inputs.clear(); });
+        controls.cleanButton.addEventListener('click', function () { inputs.clear(); displayInputs(); });
     });
 })(window)

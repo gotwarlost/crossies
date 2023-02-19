@@ -69,7 +69,7 @@ func (h *Handler) findMatchingWords(w http.ResponseWriter, r *http.Request) {
 	}
 	result, err := q.Run()
 	if err != nil {
-		if _, ok := err.(inputerror.InputError); ok {
+		if ok := inputerror.IsInputError(err); ok {
 			h.sendError(w, err.Error(), http.StatusBadRequest)
 		} else {
 			h.sendError(w, err.Error(), http.StatusInternalServerError)
@@ -94,7 +94,7 @@ func (h *Handler) solveAnagram(w http.ResponseWriter, r *http.Request) {
 
 	result, err := anagrams.Solve(q)
 	if err != nil {
-		if _, ok := err.(inputerror.InputError); ok {
+		if ok := inputerror.IsInputError(err); ok {
 			h.sendError(w, err.Error(), http.StatusBadRequest)
 		} else {
 			h.sendError(w, err.Error(), http.StatusInternalServerError)
